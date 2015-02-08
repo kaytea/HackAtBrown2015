@@ -19,6 +19,8 @@ namespace Microsoft.Samples.Kinect.ControlsBasics
     /// </summary>
     public partial class MainWindow
     {
+        SampleDataSource sampleDataSource;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class. 
         /// </summary>
@@ -35,29 +37,23 @@ namespace Microsoft.Samples.Kinect.ControlsBasics
             this.kinectRegion.KinectSensor = KinectSensor.GetDefault();
 
             //// Add in display content
-            var sampleDataSource = SampleDataSource.GetGroup("Group-1");
-            this.itemsControl.ItemsSource = sampleDataSource;
-
             Site wikiSite = new Site("http://en.wikipedia.org", "hackatbrown", "password");
-
             PageList pageList = new PageList(wikiSite);
-
             pageList.FillFromGoogleSearchResults("Morgan Freeman", 1);
 
-            foreach (DotNetWikiBot.Page page in pageList) {
-                page.Load();
-                PageList links = page.GetLinks();
+            this.setData(pageList[0]);
 
-                Console.WriteLine("Got page with title: {0}", page.title);
-                foreach (DotNetWikiBot.Page subPage in links) {
-                    try {
-                        subPage.Load();
-                        Console.WriteLine("\t Subpage with title: {0}", subPage.title);
-                    } catch (NullReferenceException e) {
-                        break;
-                    }
-                }
-            }
+        }
+
+        private void setData(DotNetWikiBot.Page page) {
+            SampleDataSource sampleDataSourceRoot = new SampleDataSource();
+
+            sampleDataSourceRoot.setDataSource(page); 
+
+            var sampleDataSource = SampleDataSource.GetGroup(page.pageId);
+
+            this.itemsControl.ItemsSource = sampleDataSource;
+
         }
 
         /// <summary>
@@ -68,12 +64,14 @@ namespace Microsoft.Samples.Kinect.ControlsBasics
         private void ButtonClick(object sender, RoutedEventArgs e)
         {            
             var button = (Button)e.OriginalSource;
-            SampleDataItem sampleDataItem = button.DataContext as SampleDataItem;
+            DataItem DataItem = button.DataContext as DataItem;
+            this.setData(DataItem.Page);
+            /*
 
-            if (sampleDataItem != null && sampleDataItem.NavigationPage != null)
+            if (DataItem != null && DataItem.NavigationPage != null)
             {
                 backButton.Visibility = System.Windows.Visibility.Visible;
-                navigationRegion.Content = Activator.CreateInstance(sampleDataItem.NavigationPage);
+                navigationRegion.Content = Activator.CreateInstance(DataItem.NavigationPage);
             }
             else
             {
@@ -92,6 +90,7 @@ namespace Microsoft.Samples.Kinect.ControlsBasics
 
                 e.Handled = true;
             }
+            */
         }
 
         /// <summary>
